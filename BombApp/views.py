@@ -1,3 +1,4 @@
+from django.contrib.sessions.models import Session
 from django.http import JsonResponse
 from BombApp.models import *
 from django.conf import settings
@@ -25,8 +26,11 @@ def loginValid_user(checktype=False):
                 ).first()
                 if us_exit:
                     if checktype == True:
-                        if us_exit.type == 0:
+                        if us_exit.type != 1:
                             return fun(request, *args, **kwargs)
+                        else:
+                            # 10009不允许此操作
+                            return JsonResponse({'success': 0, 'msg': 10009})
                     else:
                         return fun(request, *args, **kwargs)
                 return JsonResponse({'success': 0, 'msg': 0})
@@ -72,6 +76,30 @@ def checkversion(request):  # 版本同步
        tb = MP_TABLE[ver['tb_name']]
        rt["data"][ver['tb_name']] = HelpGet(tb.objects.filter(version__gt=ver['max_version']).all())
     return JsonResponse(rt, safe=False)
+
+
+
+def checkLoginStatus(request):
+
+    cookie_result = request.session.get("account", None)
+    if cookie_result:
+        session_key = request.session.session_key
+        # print(session_key)
+        sessionid = Session.objects.filter(
+            session_key=session_key
+        ).first()
+
+        """ us_exit = User.objects.filter(
+            account=cookie_result
+        ).first()
+        if us_exit: """
+        if sessionid:
+            return JsonResponse({'success': 0, 'msg': 1})
+        else:
+            return JsonResponse({'success': 0, 'msg': 10010})
+    else:
+        return JsonResponse({'success': 0, 'msg': 10000})
+
 
 
 @loginValid_user()
@@ -501,12 +529,13 @@ def audittags(request):
 
         return JsonResponse({"success": 1, 'msg': 0})
 
-    # return JsonResponse({"success": 0, 'msg': 0})
+    return JsonResponse({"success": 0, 'msg': 0})
 
 
 
 
 def login(request):
+    request.session.flush()
     if request.method == "POST" and request.POST:
         account = request.POST.get('account')
         pwd = request.POST.get('pwd')

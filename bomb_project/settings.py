@@ -94,8 +94,9 @@ DATABASES = {
             'NAME': 'bomb_db_dug' if '--no-color' in sys.argv else 'bomb_db',
             #'NAME': 'ess_db',
             'USER': 'root',
-            'PASSWORD': 'Ess20191001..',
-            'HOST': '192.168.1.52',
+            # 'PASSWORD': 'Ess20191001..',
+            'PASSWORD': 'xykj20160315',
+            'HOST': '119.3.248.55',
         }
 }
 

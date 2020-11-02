@@ -23,6 +23,7 @@ class Simplelib(models.Model):
     decompTemp = models.CharField(max_length=256, null=True)  # 分解温度
     standardHeat = models.CharField(max_length=256, null=True)  # 标准生成热
     heatCapacity = models.CharField(max_length=256, null=True)  # 热容
+    note = models.TextField(null=True)  # 安全处置方法
     character = models.TextField(null=True)  # 性状
     standardmg = models.CharField(max_length=256, null=True)  # 标准摩尔生成焓
     wettability = models.CharField(max_length=256, null=True)  # 易湿性
@@ -164,8 +165,16 @@ MP_TABLE = dict(
 
 import json
 from django.core import serializers
-def HelpGet(data):
-    f = lambda d: dict(id=d['pk'], **d['fields'])
+
+
+def HelpGet(data, tb=None):
+    def f(d):
+        v = dict(id=d['pk'], data_size=0, ** d['fields'])
+        if tb:
+            v['data_size'] = tb[d['fields']['tb_name']].objects.count()
+        # print(v)
+        return v
+
     return [f(d) for d in json.loads(serializers.serialize('json', data))]
 
     # rt=[]
